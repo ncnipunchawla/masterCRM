@@ -8,6 +8,7 @@ const unhandledRejection = require('unhandled-rejection');
 const rejectionEmitter = unhandledRejection({ timeout: 20 });
 const jwt = require('express-jwt');
 const mongoose = require('mongoose');
+mongoose.promise = Promise;
 mongoose.connect('mongodb+srv://nipun:qwe123qwe123@localdata-tmzju.mongodb.net/newsdata?retryWrites=true&w=majority', {useNewUrlParser: true, useCreateIndex: true});
 
 require('dotenv').config();
@@ -59,6 +60,8 @@ app.use(bodyParser.urlencoded({ limit: '50mb', extended: true }));
 
 app.use(require('./routes/index'));
 app.use(require('./routes/authentication'));
+app.use(require('./routes/users'));
+app.use(require('./routes/clients'));
 
 rejectionEmitter.on("unhandledRejection", (error, promise) => {
     console.log("Error in unhandledRejection:", error);

@@ -9,12 +9,12 @@ const ClientsSchema = new Schema({
     location: {type: String},
     city: {type: String},
     state: {type: String},
-    status: {type: Number}, // 1: Trial, 2: Mini, 3: Pro, 4: End Trial, 5: End Subscription, 6: Disabled
+    status: {type: Number, default: 1}, // 1: Trial, 2: Mini, 3: Pro, 4: End Trial, 5: End Subscription, 6: Disabled
     subsciption: {
-        billing_cycle: {type: Number}, // In Months
+        billing_cycle: {type: Number, default: 2}, // In Months
         start_date: {type: Date},
         end_date: {type: Date},
-        price: {type: Number}
+        price: {type: Number, default: 0}
     }
 }, { collection: 'clients' });
 

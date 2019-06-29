@@ -1,13 +1,11 @@
 'use strict';
 
-const Client = require('../models/clients');
 const User = require('../models/users');
 const md5 = require('md5');
 const authenticate = require('./authentication');
-const mongoose = require('mongoose');
 
 function handleAuthentication(email, password, ip) {
-    return User.findOne({"email": email}).exec().then(user => {
+    return User.findOne({"email": email}).then(user => {
         if(!user) {
             return {
                 'status': 401,
@@ -44,7 +42,7 @@ function handleAuthentication(email, password, ip) {
 function authenticateUser(email, password) {
     const salt = process.env.AUTH_SALT;
     const encrypted_password = md5(password + salt);
-    return User.findOne({"email": email, "password": encrypted_password}).exec().then(user => {
+    return User.findOne({"email": email, "password": encrypted_password}).then(user => {
         return user;
     });
 }
