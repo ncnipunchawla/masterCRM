@@ -8,7 +8,7 @@ const unhandledRejection = require('unhandled-rejection');
 const rejectionEmitter = unhandledRejection({ timeout: 20 });
 const jwt = require('express-jwt');
 const mongoose = require('mongoose');
-mongoose.connect('mongodb+srv://nipun:qwe123qwe123@localdata-tmzju.mongodb.net/test?retryWrites=true&w=majority', {useNewUrlParser: true});
+mongoose.connect('mongodb+srv://nipun:qwe123qwe123@localdata-tmzju.mongodb.net/newsdata?retryWrites=true&w=majority', {useNewUrlParser: true, useCreateIndex: true});
 
 require('dotenv').config();
 const app = express();
@@ -20,24 +20,30 @@ let authenticate = jwt({
 });
 const general = require('./services/general');
 
+var accessiblePaths = ['/authenticate'];
+
 app.use(['/v1'], function (req, res, next) {
-    let decoded_token;
-    let current_timestamp = new Date().getTime() / 1000;
-    general.jwtVerifyAndDecode(req.headers.authorization).then((_decoded_token) => {
-        decoded_token = _decoded_token;
-        if (decoded_token.exp < current_timestamp) {
-            throw new Error('ExpiredToken');
-        }
-        return authenticate(req, res, function (error) {
-            if (error)
-                return res.status(401).send(error);
-            return next();
-        })
-    }).catch((error) => {
-        if (error.message == 'ExpiredToken')
-            return res.status(401).send('Token expired');
-        return res.status(401).send(error);
-    });;
+    if (accessiblePaths.indexOf(req.path) > -1) {
+        next();
+    } else {
+        let decoded_token;
+        let current_timestamp = new Date().getTime() / 1000;
+        general.jwtVerifyAndDecode(req.headers.authorization).then((_decoded_token) => {
+            decoded_token = _decoded_token;
+            if (decoded_token.exp < current_timestamp) {
+                throw new Error('ExpiredToken');
+            }
+            return authenticate(req, res, function (error) {
+                if (error)
+                    return res.status(401).send(error);
+                return next();
+            })
+        }).catch((error) => {
+            if (error.message == 'ExpiredToken')
+                return res.status(401).send('Token expired');
+            return res.status(401).send(error);
+        });
+    }
 });
 
 
@@ -52,6 +58,7 @@ app.use(bodyParser.json({ limit: '50mb' }));
 app.use(bodyParser.urlencoded({ limit: '50mb', extended: true }));
 
 app.use(require('./routes/index'));
+app.use(require('./routes/authentication'));
 
 rejectionEmitter.on("unhandledRejection", (error, promise) => {
     console.log("Error in unhandledRejection:", error);
